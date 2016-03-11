@@ -1,9 +1,10 @@
 #!/usr/bin/python
 #coding=utf-8
 
-import spider.Spider
+import Spider.spider
+
+
 
 if __name__ == "__main__":
 
-    spider_thread = Spider(1)
-    spider.strat()
+    crawler = spider()
