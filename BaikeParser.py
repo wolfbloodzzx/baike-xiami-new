@@ -10,7 +10,7 @@ from download.downloader import HttpDownloader
 class baike:
 
     def __init__(self,html):
-        self.soup = BeautifulSoup(html,"html.parser")
+        self.soup = BeautifulSoup(html,"lxml")
         pass
 
     # 删除回车
@@ -339,9 +339,12 @@ class searchBaike:
     def search(name):
         url = "http://baike.baidu.com/search?word=" + urllib.quote(name) + "&pn=0&rn=0&enc=utf8"
         html = HttpDownloader.download(url)
-        soup = BeautifulSoup(html,"html.parser")
+        soup = BeautifulSoup(html,"lxml")
         if soup.find(class_="no-result") == None:
             if soup.find(class_="create-entrance") == None:
                 result_url = soup.find(class_="searchResult").find("dl",class_="search-list").find("dd").find('a').attrs["href"]
                 return result_url
         return ""
+
+if __name__ == "__main__":
+    searchBaike.search("S.H.E")

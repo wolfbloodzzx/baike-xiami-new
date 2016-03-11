@@ -57,8 +57,16 @@ class spider:
             saver_handle = saver('out_data_json.txt')
             saver_handle.write(jstr+'\n')
             saver_handle.close()
+        else:
+            saver_handle = saver("star_not_found.txt")
+            saver_handle.write(id+'\t'+name)
+            saver_handle.close()
 
         pass
 
     def __stop(self):
         pass
+
+if __name__ == "__main__":
+    sp = spider()
+    sp.run("S.H.E",'1')
