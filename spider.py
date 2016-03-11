@@ -32,35 +32,48 @@ class spider:
         return data
 
     def run(self,name,id):
-        url = searchBaike.search(name)
-        if url != '':
-            result = []
-            b = baike(HttpDownloader.download(url))
-            person_list = b.parseAllPerson()
-            if len(person_list) == 0:
-                result.append(self._getData(b,url))
-            else:
-                flag = 0
-                for i in person_list:
-                    if flag == 0:
-                        data = self._getData(b,url,i["title"])
-                        data['id'] = id
-                        result.append(data)
-                        flag = 1
-                    else:
-                        t_b = baike(HttpDownloader.download(i['url']))
-                        data = self._getData(t_b,i['url'],i['title'])
-                        data['id'] = id
-                        result.append(data)
+        try:
+            url = searchBaike.search(name)
+            if url != '':
+                result = []
+                b = baike(HttpDownloader.download(url))
+                person_list = b.parseAllPerson()
+                if len(person_list) == 0:
+                    result.append(self._getData(b,url))
+                else:
+                    flag = 0
+                    for i in person_list:
+                        if flag == 0:
+                            data = self._getData(b,url,i["title"])
+                            data['id'] = id
+                            result.append(data)
+                            flag = 1
+                        else:
+                            t_b = baike(HttpDownloader.download(i['url']))
+                            data = self._getData(t_b,i['url'],i['title'])
+                            data['id'] = id
+                            result.append(data)
 
-            jstr = json.dumps(result,ensure_ascii=False)
-            saver_handle = saver('out_data_json.txt')
-            saver_handle.write(jstr+'\n')
-            saver_handle.close()
-        else:
-            saver_handle = saver("star_not_found.txt")
-            saver_handle.write(id+'\t'+name)
-            saver_handle.close()
+                jstr = json.dumps(result,ensure_ascii=False)
+                saver_handle = saver('out_data_json.txt')
+                saver_handle.write(jstr+'\n')
+                saver_handle.close()
+            else:
+                saver_handle = saver("star_not_found.txt")
+                saver_handle.write(id+'\t'+name+'\n')
+                saver_handle.close()
+        except AttributeError,e:
+            print "AttributeError"
+            print e.message
+            s = saver("error_list.txt")
+            s.write("AttributeError\t"+id+'\t'+name+'\n')
+            s.close()
+        except IOError,e:
+            print "IOError"
+            print e.message
+            s = saver("error_list.txt")
+            s.write("IOError\t"+id+'\t'+name+'\n')
+            s.close()
 
         pass
 
@@ -69,4 +82,4 @@ class spider:
 
 if __name__ == "__main__":
     sp = spider()
-    sp.run("S.H.E",'1')
+    sp.run("李宇春",'1')

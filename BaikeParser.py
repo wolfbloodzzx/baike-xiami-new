@@ -67,6 +67,7 @@ class baike:
                     continue
                 title_tag = li.select('b[class~="title"] a')
                 if len(title_tag) > 0:
+                    title_tag = title_tag[0]
                     m["title"] = self._delret(title_tag.text)
                     if 'href' in title_tag.attrs:
                         m["url"] =  title_tag.attrs["href"]
