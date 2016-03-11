@@ -10,11 +10,11 @@ from download.downloader import HttpDownloader
 class baike:
 
     def __init__(self,html):
-        self.soup = BeautifulSoup(html)
+        self.soup = BeautifulSoup(html,"html.parser")
         pass
 
     # 删除回车
-    def _delret(s):
+    def _delret(self,s):
         pat = re.compile('[\r\n]')
         return pat.sub('',s)
 
@@ -69,7 +69,9 @@ class baike:
                 if len(title_tag) > 0:
                     m["title"] = self._delret(title_tag.text)
                     if 'href' in title_tag.attrs:
-                        m["url"] = "http://baike.baidu.com" + title_tag.attrs["href"]
+                        m["url"] =  title_tag.attrs["href"]
+                        if not re.compile("http://").match(m["url"]):
+                            m["url"] = "http://baike.baidu.com/"+m["url"]
                     data["data"].append(m)
             return data
         else:
@@ -96,11 +98,13 @@ class baike:
 
             if tag.find('div',class_="musicAlbumStar-viewport") != None:
                 data["musicAlbum"] = []
-                for album in tag.selec('div.musicAlbumStar-viewport li.album-item .albumName'):
+                for album in tag.select('div.musicAlbumStar-viewport li.album-item .albumName'):
                     node = {}
-                    node["title"] = self._delret(album.find('a',class_='albumName').text)
+                    node["title"] = self._delret(album.text)
                     if album.name == "a":
                         node["url"] = album.attrs['href']
+                        if not re.compile("http://").match(node["url"]):
+                            node["url"] = "http://baike.baidu.com/" + node["url"]
                     data["musicAlbum"].append(node)
 
             if tag.find('div',class_="musicSingle-wrapper") != None:
@@ -109,12 +113,14 @@ class baike:
                     node = {}
                     title_tag = tr.select('td .title')
                     year_tag = tr.select('td.align-center')
-                    if len(title_tag) < 0 or len(year_tag) <0:
+                    if len(title_tag) == 0 or len(year_tag) == 0:
                         continue
                     node["title"] = self._delret(title_tag[0].text)
                     node["year"] = self._delret(year_tag[0].text)
                     if title_tag[0].find('a') != None:
                         node["url"] = title_tag[0].find('a').attrs['href']
+                        if not re.compile("http://").match(node['url']):
+                            node["url"] = "http://baike.baidu.com/" + node['url']
                     data["musicSingle"].append(node)
 
             if tag.find('div',class_="musicOther-wrapper") != None:
@@ -240,7 +246,9 @@ class baike:
                 temp_relation = {}
                 temp_relation["relation"] = i[0]
                 temp_relation["name"] = i[1].text
-                temp_relation["url"] = "http://baike.baidu.com"+node.find('a').attrs["href"]
+                temp_relation["url"] = node.find('a').attrs["href"]
+                if not re.compile("http://").match(temp_relation["url"]):
+                    temp_relation["url"] = "http://baike.baidu.com/"+temp_relation["url"]
                 relation.append(temp_relation)
         return relation
 
@@ -256,7 +264,7 @@ class baike:
                 for cate in catelog:
                     if "level1" in cate.attrs["class"]:
                         node1 = {}
-                        node1["name"] = self.delret(cate.find(class_="text").text)
+                        node1["name"] = self._delret(cate.find(class_="text").text)
                         node1["content"] = ""
                         node1["data"] = []
                         node1["children"] = []
@@ -274,7 +282,7 @@ class baike:
             index_l2 = 0
 
             anchor_list = self.soup.find_all('div',class_="anchor-list")
-            for l2 in maincontent["data"]:
+            for l2 in maincontent:
                 class_name = str(index_l2+1)
                 tag = self.soup
                 for i in anchor_list:
@@ -283,7 +291,7 @@ class baike:
                         break
                 if tag == self.soup :
                     continue
-                l2["content"],l2["data"] = self.getMainContent(tag)
+                l2["content"],l2["data"] = self.parseLevel(tag)
 
                 # 抓取三级目录
                 index_l3 = 0
@@ -297,7 +305,7 @@ class baike:
                                 break
                         if tag == self.soup :
                             continue
-                        l3["content"],l3["data"] = self.getMainContent(tag)
+                        l3["content"],l3["data"] = self.parseLevel(tag)
 
                         index_l3 += 1
 
@@ -315,10 +323,15 @@ class baike:
                 result_list.append({'title':self._delret(head.find('li').text),'url':''})
 
             for a_tag in head.select('li.item a'):
-                url = "http://baike.baidu.com"+a_tag.attrs['href']
-                result_list.append({'title':self.delret(a_tag.text),'url':url})
+                url = a_tag.attrs['href']
+                if not re.compile("http://").match(url):
+                    url = "http://baike.baidu.com"+url
+                result_list.append({'title':self._delret(a_tag.text),'url':url})
 
         return result_list
+
+    def getCiTiao(self):
+        return self._delret(self.soup.find(class_="lemmaWgt-lemmaTitle-title").h1.text)
 
 class searchBaike:
 

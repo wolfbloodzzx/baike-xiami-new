@@ -12,7 +12,7 @@ class ActorNameHelper:
     def getName(self):
         line = self.fp.readline()
         if not line:
-            return None
+            return None,None
         line = line.strip()
         l = line.split('\t')
         while line.strip() == '' or len(l) != 2:

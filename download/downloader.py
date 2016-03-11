@@ -55,6 +55,8 @@ class HttpDownloader():
         :param timeout: 下载超时设定，默认是30秒。
         :return: 下载的网页源码
         """
+        # debug
+        print "debug:\t"+url
         if not url:
             print "download url is empty"
             return

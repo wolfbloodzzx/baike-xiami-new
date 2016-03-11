@@ -15,9 +15,9 @@ from download.downloader import HttpDownloader
 import json
 
 
-class spider(threading.Thread):
+class spider:
 
-    def __init__(self,url):
+    def __init__(self):
         pass
 
     def _getData(self,b,url,tag=''):
@@ -28,28 +28,34 @@ class spider(threading.Thread):
         data["maintain"] = b.getMainContent()
         data["url"] = url
         data["tag"] = tag
+        data["citiao"] = b.getCiTiao()
         return data
 
-    def run(self,name):
+    def run(self,name,id):
         url = searchBaike.search(name)
         if url != '':
             result = []
             b = baike(HttpDownloader.download(url))
             person_list = b.parseAllPerson()
             if len(person_list) == 0:
-                result.append(self.getData(b,url))
+                result.append(self._getData(b,url))
             else:
                 flag = 0
                 for i in person_list:
                     if flag == 0:
-                        self._getJsonData(b,url,i["title"])
+                        data = self._getData(b,url,i["title"])
+                        data['id'] = id
+                        result.append(data)
                         flag = 1
-                    t_b = baike(HttpDownloader.download(i['url']))
-                    result.append(self._getData(t_b,i['url'],i['title']))
+                    else:
+                        t_b = baike(HttpDownloader.download(i['url']))
+                        data = self._getData(t_b,i['url'],i['title'])
+                        data['id'] = id
+                        result.append(data)
 
             jstr = json.dumps(result,ensure_ascii=False)
             saver_handle = saver('out_data_json.txt')
-            saver_handle.write(jstr)
+            saver_handle.write(jstr+'\n')
             saver_handle.close()
 
         pass
